@@ -230,7 +230,7 @@ function loadCaptures() {
   // Unsubscribe from previous listener if exists
   if (capturesUnsub) capturesUnsub();
   const q = query(collection(db, "captures"), where("boardId", "==", currentBoard.id));
-  onSnapshot(q, (snap) => {
+  capturesUnsub = onSnapshot(q, (snap) => {
     captures = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     captures.sort((a, b) => {
       const ta = a.createdAt?.seconds ?? 9999999999;
@@ -239,7 +239,7 @@ function loadCaptures() {
     });
     renderCards();
   }, (err) => {
-    $("cards").innerHTML = "<p class='small'>Could not load captures: " + err.message + "</p>";
+    $("cards").innerHTML = "<p class='small'>Could not load captures: " + esc(err.message) + "</p>";
   });
 }
 function guessCategory(text) {
@@ -303,18 +303,22 @@ $("save-btn").onclick = async () => {
   const description = $("idea-input").value.trim(); const subject = $("subject-input").value.trim() || suggestTitle(description) || "Visual capture";
   if (!description && !subject && !currentImage) return;
   if (currentImage.length > 950000) { $("save-note").textContent = "That photo is still too large for a free database document. Try a simpler photo."; return; }
-  const captureResult = await addDoc(collection(db, "captures"), { boardId: currentBoard.id, ownerId: currentUser.uid, subject, description, category: $("category-select").value, image: currentImage, createdAt: serverTimestamp() });
-  const captureId = captureResult.id;
   try {
-    const captureDoc = await getDoc(doc(db, "captures", captureId));
-    if (captureDoc.exists()) {
-      $("idea-input").value = "";
-      $("subject-input").value = "";
-      userEditedTitle = false;
-      $("remove-photo-btn").click();
-      $("save-note").textContent = "Capture saved.";
-    } else {
-      $("save-note").textContent = "Capture save failed: document not found.";
+    const captureResult = await addDoc(collection(db, "captures"), { boardId: currentBoard.id, ownerId: currentUser.uid, subject, description, category: $("category-select").value, image: currentImage, createdAt: serverTimestamp() });
+    const captureId = captureResult.id;
+    try {
+      const captureDoc = await getDoc(doc(db, "captures", captureId));
+      if (captureDoc.exists()) {
+        $("idea-input").value = "";
+        $("subject-input").value = "";
+        userEditedTitle = false;
+        $("remove-photo-btn").click();
+        $("save-note").textContent = "Capture saved.";
+      } else {
+        $("save-note").textContent = "Capture save failed: document not found.";
+      }
+    } catch(e) {
+      $("save-note").textContent = "Capture save failed: " + e.message;
     }
   } catch(e) {
     $("save-note").textContent = "Capture save failed: " + e.message;
