@@ -1,30 +1,26 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Test a recruiting AI’s instructions and reasoning, plan accessible practice, and keep human conversations at the center. A prototype by Clea Mahoney.">
-  <title>ATS sandbox | Clea Mahoney</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261030-2"><script type="module" src="app.mjs?v=20261030-2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI experiments</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:'DM Sans',sans-serif;background:#F6F5F1;color:#16202E;margin:0;padding:48px 16px;line-height:1.55}
+main{max-width:640px;margin:0 auto}
+h1{font-size:1.6rem;letter-spacing:-.02em;margin:0 0 6px}
+.sub{color:#5C6675;margin:0 0 28px}
+a.card{display:block;background:#fff;border:1px solid #E3E6EC;border-radius:14px;padding:18px;margin-bottom:12px;color:inherit;text-decoration:none}
+a.card:hover,a.card:focus-visible{border-color:#1F6357}
+a.card strong{display:block;color:#1F6357}
+a.card span{color:#5C6675;font-size:.92rem}
+</style>
 </head>
 <body>
-<a class="skip" href="#main">Skip to the exercise</a>
-<header class="masthead"><a href="./" class="wordmark">ATS sandbox</a><div class="portfolio-links"><a href="https://clea-mahoney.github.io/clea-portfolio/">Clea Mahoney’s portfolio ↗</a><details class="about-lab"><summary>Why I built this</summary><p>I want customer education to help people use AI thoughtfully in their actual work. This lab connects live practice with the decisions a team makes inside a product, so time saved on review can become time spent getting to know candidates. This lab is based on a fictional recruiting platform, with assumptions made on how its AI can be configured.</p></details></div></header>
-<main id="main">
-  <div class="intro"><p class="eyebrow">A recruiting AI practice lab - ~10 minutes</p><h1>Better evidence. Better candidate conversations.</h1><p>Review the AI’s instructions, check its claims against candidate evidence, and decide what needs a conversation.</p></div>
-  <section class="callout" aria-label="Your mission"><h2>Your mission</h2><p>You're a recruiter prepping an AI review workflow for a fictional customer education hire. The team needs someone to run live workshops, support presenters, and improve what customers can do afterward. Test the proposed workflow before a pilot.</p></section>
-  <nav aria-label="Practice sections"><ol class="steps" id="steps"></ol></nav>
-  <section id="case-screen" aria-labelledby="case-heading">
-    <p class="eyebrow" id="case-subtitle"></p><h2 id="case-heading" tabindex="-1"></h2><p id="case-context"></p>
-    <div class="workspace"><aside class="brief"><h3>Proposed AI output</h3><blockquote id="draft"></blockquote></aside><article class="panel"><h3>Source evidence</h3><dl id="evidence" class="evidence"></dl></article></div>
-    <form class="panel feedback" id="decision-form"><fieldset><legend id="question"></legend><div id="options"></div></fieldset><div class="actions"><button type="submit">See what happens</button></div></form>
-    <section class="callout feedback" id="feedback" aria-labelledby="feedback-heading" hidden><h3 id="feedback-heading" tabindex="-1">What your choice changes</h3><p id="feedback-text"></p><label for="note">Your reasoning or a question for the team <span class="small">Optional. Notes clear when you reload.</span></label><textarea id="note" rows="3" maxlength="2000"></textarea></section>
-    <div class="actions navigation"><button class="secondary" type="button" id="back">← Previous</button><button type="button" id="next">Next section →</button><p class="small" id="position" aria-live="polite"></p></div>
-  </section>
-  <section id="finish-screen" aria-labelledby="finish-heading" hidden><p class="eyebrow">Your practice review</p><h2 id="finish-heading" tabindex="-1">What would you take into a pilot?</h2><p id="completion" class="callout"></p><div id="review"></div><div class="actions"><button id="copy" type="button">Copy my review</button><button class="secondary" id="return" type="button">Return to the practice</button><button class="secondary" id="restart" type="button">Start again</button></div><p id="copy-status" role="status"></p></section>
-  <details class="facilitator"><summary>Use this in a live workshop</summary><p>Ask customers to make an individual decision before discussing it in pairs. Compare which source supports each claim, what remains unknown, and who owns the next action. Use the review as a follow-up resource.</p><p>Then give them a fresh example in a test environment. Check whether they can revise a criterion, catch an unsupported claim, and draft a useful question. Afterward, partner with the recruiting team to review corrections, missed evidence, and time spent. </p></details>
-  <noscript><p class="callout">Enable JavaScript to use the exercise.</p></noscript>
+<main>
+<h1>AI experiments</h1>
+<p class="sub">Small AI projects by Clea Mahoney.</p>
+<a class="card" href="ats-sandbox/"><strong>Testing a recruiting AI workflow</strong><span>A ten-minute practice lab: choose job-relevant criteria, check claims against sources, keep people responsible for decisions.</span></a>
 </main>
-<footer><p>A learning-design prototype by <a href="https://clea-mahoney.github.io/clea-portfolio/">Clea Mahoney</a>.</p><details><summary>Sources</summary><p>Inspired by <a href="https://docs.ashbyhq.com/ai-assisted-application-review">Ashby’s AI-assisted application review</a> and <a href="https://docs.ashbyhq.com/ashby-agents-use-case-library">Ashby’s agent use cases</a>. Reviewed October 30, 2026.</p></details></footer>
-</body></html>
+</body>
+</html>

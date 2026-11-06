@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inspogram</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#16202E;--slate:#5C6675;--border:#E3E6EC;--bg:#F6F5F1;--card:#fff;--input:#F3F2EE;--sea:#1F6357;--sea-soft:#E9F3F1;--apricot:#F29B76;--apricot-soft:#FDF0EA;--apricot-deep:#8F4222}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--navy);line-height:1.5;padding:20px 16px 90px}
+.container{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;border-bottom:1px solid var(--border);padding-bottom:12px}
+h1{font-size:1.4rem;letter-spacing:-.02em}
+.sub{color:var(--slate);font-size:.88rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+input,textarea,select{width:100%;font-family:inherit;font-size:.92rem;background:var(--input);border:1px solid var(--border);border-radius:9px;padding:9px 11px;color:var(--navy)}
+textarea{min-height:84px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:none;background:#fff;border-color:var(--sea)}
+button{font-family:inherit;font-weight:600;border-radius:9px;cursor:pointer;padding:9px 16px;border:1px solid transparent}
+.btn-primary{background:var(--sea);color:#fff}
+.btn-secondary{background:#EAE8E1;color:var(--navy);border-color:#D8D5CC}
+.btn-danger{background:var(--apricot-soft);color:var(--apricot-deep);border-color:var(--apricot)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{font-size:.78rem;background:var(--sea-soft);color:var(--sea);border:1px solid #C5DFDA;border-radius:6px;padding:2px 8px}
+.small{font-size:.82rem;color:var(--slate)}
+.photo-stage{background:var(--input);border:1.5px dashed #B8C2D0;border-radius:11px;padding:16px;cursor:pointer;text-align:center}
+.photo-stage img{width:100%;max-height:260px;object-fit:contain;border-radius:8px;background:#fff}
+.pills{display:flex;gap:7px;flex-wrap:wrap}
+.filter-pill{background:var(--input);border:1px solid var(--border);color:var(--slate);padding:5px 11px;font-size:.81rem}
+.filter-pill.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.capture{border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:9px;background:#fff}
+.capture img{width:100%;max-height:280px;object-fit:contain;background:#FAF9F6;border:1px solid var(--border);border-radius:9px}
+.swatch{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);display:inline-block}
+.hidden{display:none}
+.sparkles{display:flex;justify-content:space-around;align-items:center;height:30px;pointer-events:none}
+.sparkles svg{width:22px;height:22px;opacity:.6}
+.sparkles svg:nth-child(2){width:14px;height:14px;opacity:.45}
+.sparkles svg:nth-child(3){width:26px;height:26px;opacity:.7}
+.sparkles svg:nth-child(4){width:12px;height:12px;opacity:.4}
+.landing-phone{border:8px solid var(--navy);border-radius:28px;background:#fff;padding:16px;display:flex;flex-direction:column;gap:12px;pointer-events:none;user-select:none;box-shadow:0 14px 30px rgba(22,32,46,.14)}
+.landing-mini{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px}
+.landing-mini b{font-size:.95rem}
+.landing-mini p{font-size:.85rem;color:var(--slate);margin-top:4px}
+.landing-swatches{display:flex;gap:8px;margin-top:10px}
+.landing-swatches span{width:30px;height:30px;border-radius:50%;border:1px solid var(--border)}
+.input-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.input-tile{display:flex;align-items:center;gap:12px;background:var(--sea-soft);border:1px solid #C5DFDA;border-radius:12px;padding:12px 14px;text-align:left;color:var(--navy)}
+.input-tile:nth-child(2){background:var(--apricot-soft);border-color:#F2C9B6}
+.input-tile svg{width:34px;height:34px;flex-shrink:0}
+.input-tile strong{display:block;font-size:.92rem}
+.input-tile span{font-size:.78rem;color:var(--slate)}
+.icon-inline{width:18px;height:18px;vertical-align:-4px;margin-right:6px}
+label{font-size:.82rem;color:var(--slate);font-weight:500}
+h2{font-size:1rem}
+h3{font-size:.95rem}
+</style>
+<script type="importmap">{"imports":{"firebase/app":"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js","firebase/auth":"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js","firebase/firestore":"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"}}</script>
+</head>
+<body>
+<div class="container">
+<header>
+<div><h1>Inspogram</h1><p class="sub">Capture and catalog whatever inspires you.</p></div>
+<div class="row"><span id="user-label" class="pill hidden"></span><button id="signout-btn" class="btn-secondary hidden" type="button">Sign out</button></div>
+</header>
+
+<div id="landing-phone" class="landing-phone" aria-hidden="true">
+<div class="landing-mini"><b>Apricot storefront</b><p>Category: Color and palette</p><div class="landing-swatches"><span style="background:#F29B76"></span><span style="background:#1F6357"></span><span style="background:#16202E"></span></div></div>
+<div class="landing-mini"><b>What stood out</b><p>Warm color, minimal clutter, clear hierarchy.</p></div>
+</div>
+
+<section id="auth-card" class="card">
+<h2>Sign in</h2>
+<p class="small">Sign in with Google, or use email and password.</p>
+<button id="google-btn" class="btn-primary" type="button">Continue with Google</button>
+<div class="row"><input id="email-input" type="email" placeholder="Email" autocomplete="email"><input id="password-input" type="password" placeholder="Password" autocomplete="current-password"></div>
+<div class="row"><button id="email-signin-btn" class="btn-secondary" type="button">Sign in with email</button><button id="email-signup-btn" class="btn-secondary" type="button">Create account</button></div>
+<p id="auth-error" class="small" style="color:var(--apricot-deep)"></p>
+</section>
+
+<div class="sparkles" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#F29B76"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg><svg viewBox="0 0 24 24" fill="#1F6357"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg><svg viewBox="0 0 24 24" fill="#F29B76"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg><svg viewBox="0 0 24 24" fill="#1F6357"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg></div>
+
+<section id="app" class="hidden">
+<div class="input-tiles">
+<button id="camera-tile" class="input-tile" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="#1F6357" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2h6l2 2h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span><strong>Camera input</strong><span>Take or pick a photo to start a capture</span></span></button>
+<button id="mic-tile" class="input-tile" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="#8F4222" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span><strong>Microphone input</strong><span>Dictate what stands out about it</span></span></button>
+</div>
+<div class="card">
+<div class="row"><h2 style="flex:1">My canvas</h2><span id="role-label" class="pill"></span></div>
+<div class="row">
+<select id="board-select"></select>
+<button id="new-board-btn" class="btn-secondary" type="button">New canvas</button>
+</div>
+<div id="share-box" class="row">
+<input id="invite-email" type="email" placeholder="Invite by email (they must have signed in once)">
+<select id="invite-role" style="width:auto"><option value="viewer">Viewer</option><option value="commenter" selected>Commenter</option></select>
+<button id="invite-btn" class="btn-secondary" type="button">Invite</button>
+</div>
+<p id="share-note" class="small"></p>
+</div>
+
+<div class="card">
+<h2>1. Snap or choose a photo</h2>
+<label class="photo-stage" for="file-input"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="#1F6357" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2h6l2 2h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="photo-prompt">Tap here to take a photo or pick from camera roll</span><img id="photo-preview" class="hidden" alt="Attached photo"></label>
+<input id="file-input" type="file" accept="image/*" class="hidden">
+<div class="row"><button id="remove-photo-btn" class="btn-secondary hidden" type="button">Remove photo</button></div>
+<h2>2. What stands out about it?</h2>
+<div class="row"><textarea id="idea-input" placeholder="Tap Dictate and talk about what caught your eye, or type here..."></textarea><button id="dictate-btn" class="btn-secondary" type="button"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="#16202E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Dictate</button></div>
+<h2>3. Suggested title and category</h2>
+<div class="row">
+<div style="flex:1"><label>Shorter title</label><input id="subject-input" placeholder="Type a title or let your note suggest one..."></div>
+<div style="flex:1"><label>Category</label><select id="category-select"></select></div>
+</div>
+<div class="row"><input id="new-category-input" placeholder="New category name..."><button id="add-category-btn" class="btn-secondary" type="button">Add category</button></div>
+<button id="save-btn" class="btn-primary" type="button">Save capture</button>
+<p id="save-note" class="small"></p>
+</div>
+
+<div class="sparkles" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#1F6357"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg><svg viewBox="0 0 24 24" fill="#F29B76"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg><svg viewBox="0 0 24 24" fill="#1F6357"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg><svg viewBox="0 0 24 24" fill="#F29B76"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg></div>
+
+<div class="card">
+<h2>Saved inspiration</h2>
+<div class="row"><input id="search-input" placeholder="Search your canvas..." style="flex:1"><select id="filter-select" style="width:auto"><option value="All">All categories</option></select></div>
+<div id="cards"></div>
+</div>
+
+<div class="sparkles" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#F29B76"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg><svg viewBox="0 0 24 24" fill="#1F6357"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg><svg viewBox="0 0 24 24" fill="#F29B76"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg><svg viewBox="0 0 24 24" fill="#1F6357"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg></div>
+
+<div class="card">
+<h2>Compile</h2>
+<p class="small">Pick categories, then copy a compiled summary to use for a website theme or brand palette. Colors are sampled from your saved photos in the browser.</p>
+<div id="compile-cats" class="pills"></div>
+<button id="compile-btn" class="btn-primary" type="button">Build compiled summary</button>
+<textarea id="compile-output" placeholder="Your compiled summary will appear here..." style="min-height:200px"></textarea>
+<button id="copy-compile-btn" class="btn-secondary" type="button">Copy compiled summary</button>
+</div>
+</section>
+</div>
+
+<script type="module">
+import { initializeApp } from "firebase/app";
+import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
+import { getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, onSnapshot, getDocs, getDoc, serverTimestamp } from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAaSTdH5z4Hv7tZXAYWbgR3oB-RfJDc_no",
+  authDomain: "inspogram-c738a.firebaseapp.com",
+  projectId: "inspogram-c738a",
+  storageBucket: "inspogram-c738a.firebasestorage.app",
+  messagingSenderId: "132227690211",
+  appId: "1:132227690211:web:05f65ad9d35b3e6def1fd6"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const DEFAULT_CATEGORIES = ["Layout & Grid","Color & Palette","Typography & Lettering","Anti-AI Rules","Controls & States","Print & Texture","Copy & Voice"];
+let currentUser = null, boards = [], currentBoard = null, captures = [], currentImage = "", userEditedTitle = false, selectedCompileCats = new Set(), capturesUnsub = null;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+$("google-btn").onclick = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e){ $("auth-error").textContent = e.message; } };
+$("email-signin-btn").onclick = async () => { try { await signInWithEmailAndPassword(auth, $("email-input").value, $("password-input").value); } catch(e){ $("auth-error").textContent = e.message; } };
+$("email-signup-btn").onclick = async () => { try { await createUserWithEmailAndPassword(auth, $("email-input").value, $("password-input").value); } catch(e){ $("auth-error").textContent = e.message; } };
+$("signout-btn").onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  if (!user) { $("auth-card").classList.remove("hidden"); $("landing-phone").classList.remove("hidden"); $("app").classList.add("hidden"); $("signout-btn").classList.add("hidden"); $("user-label").classList.add("hidden"); return; }
+  $("auth-card").classList.add("hidden"); $("landing-phone").classList.add("hidden"); $("app").classList.remove("hidden"); $("signout-btn").classList.remove("hidden");
+  $("user-label").classList.remove("hidden"); $("user-label").textContent = user.email || user.uid;
+  await setDoc(doc(db, "users", user.uid), { email: user.email || "", updatedAt: serverTimestamp() }, { merge: true });
+  loadBoards();
+});
+
+function loadBoards() {
+  const q = query(collection(db, "boards"), where("memberIds", "array-contains", currentUser.uid));
+  onSnapshot(q, async (snap) => {
+    boards = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (!boards.length) {
+      const ref = await addDoc(collection(db, "boards"), { title: "My canvas", ownerId: currentUser.uid, members: { [currentUser.uid]: "owner" }, memberIds: [currentUser.uid], categories: DEFAULT_CATEGORIES, createdAt: serverTimestamp() });
+      return;
+    }
+    if (!currentBoard || !boards.find(b => b.id === currentBoard.id)) currentBoard = boards[0];
+    renderBoards(); loadCaptures();
+  });
+}
+function renderBoards() {
+  $("board-select").innerHTML = boards.map(b => `<option value="${b.id}" ${b.id===currentBoard.id?"selected":""}>${esc(b.title)}</option>`).join("");
+  $("board-select").onchange = () => { currentBoard = boards.find(b => b.id === $("board-select").value); renderBoards(); loadCaptures(); };
+  const role = currentBoard.members?.[currentUser.uid] || "viewer";
+  $("role-label").textContent = role;
+  $("share-box").style.display = role === "owner" ? "flex" : "none";
+  $("share-note").textContent = role === "owner" ? "Owners can invite. Viewers can read only. Commenters can also comment." : "You are a " + role + " on this canvas.";
+  renderCategories();
+}
+$("new-board-btn").onclick = async () => {
+  const title = prompt("Canvas name?", "My canvas");
+  if (!title) return;
+  await addDoc(collection(db, "boards"), { title, ownerId: currentUser.uid, members: { [currentUser.uid]: "owner" }, memberIds: [currentUser.uid], categories: DEFAULT_CATEGORIES, createdAt: serverTimestamp() });
+};
+$("invite-btn").onclick = async () => {
+  const email = $("invite-email").value.trim().toLowerCase(); if (!email) return;
+  const role = $("invite-role").value;
+  const snap = await getDocs(query(collection(db, "users"), where("email", "==", email)));
+  if (snap.empty) { $("share-note").textContent = "That person needs to sign in to Inspogram once first, then you can invite them by email."; return; }
+  const uid = snap.docs[0].id;
+  const members = { ...(currentBoard.members||{}), [uid]: role };
+  const memberIds = [...new Set([...(currentBoard.memberIds||[]), uid])];
+  await updateDoc(doc(db, "boards", currentBoard.id), { members, memberIds });
+  $("share-note").textContent = "Invited " + email + " as " + role + ".";
+  $("invite-email").value = "";
+};
+function renderCategories() {
+  const cats = currentBoard?.categories || DEFAULT_CATEGORIES;
+  $("category-select").innerHTML = [...cats, "Decide Later"].map(c => `<option>${esc(c)}</option>`).join("");
+  $("filter-select").innerHTML = `<option value="All">All categories</option>` + cats.map(c => `<option>${esc(c)}</option>`).join("");
+  $("compile-cats").innerHTML = cats.map(c => `<button type="button" class="filter-pill ${selectedCompileCats.has(c)?"active":""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");
+  document.querySelectorAll("#compile-cats button").forEach(b => b.onclick = () => { const c = b.dataset.cat; selectedCompileCats.has(c) ? selectedCompileCats.delete(c) : selectedCompileCats.add(c); renderCategories(); });
+}
+$("add-category-btn").onclick = async () => {
+  const name = $("new-category-input").value.trim(); if (!name || !currentBoard) return;
+  const cats = [...(currentBoard.categories||[]), name];
+  await updateDoc(doc(db, "boards", currentBoard.id), { categories: cats });
+  $("new-category-input").value = "";
+};
+function loadCaptures() {
+  if (!currentBoard) return;
+  // Unsubscribe from previous listener if exists
+  if (capturesUnsub) capturesUnsub();
+  const q = query(collection(db, "captures"), where("boardId", "==", currentBoard.id));
+  onSnapshot(q, (snap) => {
+    captures = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    captures.sort((a, b) => {
+      const ta = a.createdAt?.seconds ?? 9999999999;
+      const tb = b.createdAt?.seconds ?? 9999999999;
+      return tb - ta;
+    });
+    renderCards();
+  }, (err) => {
+    $("cards").innerHTML = "<p class='small'>Could not load captures: " + err.message + "</p>";
+  });
+}
+function guessCategory(text) {
+  const t = (text||"").toLowerCase();
+  if (/\b(never|eyebrow|left border|ai tell|ban|avoid)\b/.test(t)) return "Anti-AI Rules";
+  if (/\b(font|serif|type|typography|lettering|heading|kerning)\b/.test(t)) return "Typography & Lettering";
+  if (/\b(color|palette|green|apricot|navy|slate|contrast|hue)\b/.test(t)) return "Color & Palette";
+  if (/\b(layout|grid|poster|margin|whitespace|spacing|composition)\b/.test(t)) return "Layout & Grid";
+  if (/\b(button|hover|dropdown|toggle|control|state)\b/.test(t)) return "Controls & States";
+  if (/\b(paper|print|sign|menu|packaging|texture)\b/.test(t)) return "Print & Texture";
+  if (/\b(copy|wording|tone|voice|headline)\b/.test(t)) return "Copy & Voice";
+  return "Decide Later";
+}
+function suggestTitle(text) {
+  if (!text.trim()) return "";
+  const clause = text.replace(/\s+/g," ").split(/[.!?;]+/).map(s=>s.trim()).filter(Boolean)[0] || "";
+  let words = clause.replace(/^(i think|i noticed|what stands out is|look at how|the way)\s+/i,"").split(/\s+/).slice(0,6);
+  const out = words.join(" ").replace(/[,:;]+$/,"");
+  return out ? out.charAt(0).toUpperCase() + out.slice(1) : "";
+}
+$("idea-input").addEventListener("input", () => {
+  const desc = $("idea-input").value;
+  if (!userEditedTitle) $("subject-input").value = suggestTitle(desc);
+  if (!$("category-select").value || $("category-select").value === "Decide Later") { const g = guessCategory(desc); if (g !== "Decide Later") $("category-select").value = g; }
+});
+$("subject-input").addEventListener("input", () => userEditedTitle = true);
+$("file-input").addEventListener("change", (e) => { const f = e.target.files[0]; if (f) compressImage(f); });
+function compressImage(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxW = 860; let w = img.naturalWidth, h = img.naturalHeight;
+      if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+      const canvas = document.createElement("canvas"); canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      currentImage = canvas.toDataURL("image/jpeg", 0.78);
+      $("photo-preview").src = currentImage; $("photo-preview").classList.remove("hidden"); $("photo-prompt").classList.add("hidden"); $("remove-photo-btn").classList.remove("hidden");
+      $("save-note").textContent = "Compressed photo size: about " + Math.round(currentImage.length * 0.75 / 1024) + " KB. This keeps it under the free database document limit.";
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+$("remove-photo-btn").onclick = () => { currentImage = ""; $("photo-preview").classList.add("hidden"); $("photo-prompt").classList.remove("hidden"); $("remove-photo-btn").classList.add("hidden"); $("file-input").value = ""; };
+let recognition = null, dictating = false;
+$("dictate-btn").onclick = () => {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { $("save-note").textContent = "Dictation is not supported in this browser. Type your note instead."; return; }
+  if (dictating) { recognition.stop(); dictating = false; $("dictate-btn").textContent = "Dictate"; return; }
+  recognition = new SR(); recognition.lang = "en-US"; recognition.continuous = true; recognition.interimResults = true; dictating = true; $("dictate-btn").textContent = "Finish dictating";
+  let base = $("idea-input").value;
+  recognition.onresult = (ev) => { let interim = ""; for (let i = ev.resultIndex; i < ev.results.length; i++) { if (ev.results[i].isFinal) base += ev.results[i][0].transcript + " "; else interim += ev.results[i][0].transcript; } $("idea-input").value = base + interim; $("idea-input").dispatchEvent(new Event("input")); };
+  recognition.onend = () => { if (dictating) { try { recognition.start(); } catch(e){} } };
+  recognition.start();
+};
+$("save-btn").onclick = async () => {
+  if (!currentBoard) return;
+  const role = currentBoard.members?.[currentUser.uid];
+  if (role === "viewer") { $("save-note").textContent = "Viewers cannot add captures to this canvas."; return; }
+  const description = $("idea-input").value.trim(); const subject = $("subject-input").value.trim() || suggestTitle(description) || "Visual capture";
+  if (!description && !subject && !currentImage) return;
+  if (currentImage.length > 950000) { $("save-note").textContent = "That photo is still too large for a free database document. Try a simpler photo."; return; }
+  const captureResult = await addDoc(collection(db, "captures"), { boardId: currentBoard.id, ownerId: currentUser.uid, subject, description, category: $("category-select").value, image: currentImage, createdAt: serverTimestamp() });
+  const captureId = captureResult.id;
+  try {
+    const captureDoc = await getDoc(doc(db, "captures", captureId));
+    if (captureDoc.exists()) {
+      $("idea-input").value = "";
+      $("subject-input").value = "";
+      userEditedTitle = false;
+      $("remove-photo-btn").click();
+      $("save-note").textContent = "Capture saved.";
+    } else {
+      $("save-note").textContent = "Capture save failed: document not found.";
+    }
+  } catch(e) {
+    $("save-note").textContent = "Capture save failed: " + e.message;
+  }
+};
+function renderCards() {
+  const q = ($("search-input").value||"").toLowerCase(); const filter = $("filter-select").value;
+  const role = currentBoard?.members?.[currentUser.uid] || "viewer";
+  const list = captures.filter(c => (filter === "All" || c.category === filter) && (!q || (c.subject + " " + c.description + " " + c.category).toLowerCase().includes(q)));
+  $("cards").innerHTML = list.length ? list.map(c => `
+    <article class="capture">
+      <div class="row"><strong style="flex:1">${esc(c.subject)}</strong><span class="pill">${esc(c.category)}</span></div>
+      ${c.image ? `<img src="${c.image}" alt="Captured photo">` : ""}
+      ${c.description ? `<p class="small" style="color:var(--slate)">${esc(c.description)}</p>` : ""}
+      <div class="row">
+        ${role !== "viewer" ? `<button class="btn-secondary" data-comment="${c.id}">Comment</button>` : ""}
+        ${c.ownerId === currentUser.uid ? `<button class="btn-danger" data-delete="${c.id}">Remove</button>` : ""}
+      </div>
+      <div id="comments-${c.id}"></div>
+    </article>`).join("") : "<p class='small'>No captures here yet.</p>";
+  document.querySelectorAll("[data-delete]").forEach(b => b.onclick = async () => { if (confirm("Remove this capture?")) await deleteDoc(doc(db, "captures", b.dataset.delete)); });
+  document.querySelectorAll("[data-comment]").forEach(b => b.onclick = async () => { const text = prompt("Add a comment"); if (text) await addDoc(collection(db, "captures", b.dataset.comment, "comments"), { authorId: currentUser.uid, authorEmail: currentUser.email || "", text, createdAt: serverTimestamp() }); loadComments(b.dataset.comment); });
+  list.forEach(c => loadComments(c.id));
+}
+async function loadComments(captureId) {
+  const snap = await getDocs(query(collection(db, "captures", captureId, "comments"), orderBy("createdAt", "asc")));
+  const el = $("comments-" + captureId); if (!el) return;
+  el.innerHTML = snap.docs.map(d => `<p class="small"><strong>${esc(d.data().authorEmail || "Someone")}:</strong> ${esc(d.data().text)}</p>`).join("");
+}
+$("search-input").addEventListener("input", renderCards); $("filter-select").addEventListener("change", renderCards);
+function sampleColors(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image(); img.onload = () => {
+      const canvas = document.createElement("canvas"); canvas.width = 40; canvas.height = 40; const ctx = canvas.getContext("2d"); ctx.drawImage(img, 0, 0, 40, 40);
+      const data = ctx.getImageData(0, 0, 40, 40).data; const counts = {};
+      for (let i = 0; i < data.length; i += 16) { const key = [data[i], data[i+1], data[i+2]].map(v => Math.round(v/32)*32).join(","); counts[key] = (counts[key]||0)+1; }
+      const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k]) => "#" + k.split(",").map(v => Number(v).toString(16).padStart(2,"0")).join(""));
+      resolve(top);
+    }; img.onerror = () => resolve([]); img.src = dataUrl;
+  });
+}
+$("compile-btn").onclick = async () => {
+  const cats = [...selectedCompileCats]; if (!cats.length) { $("compile-output").value = "Pick at least one category first."; return; }
+  let out = "# Inspogram compiled summary\n\n";
+  for (const cat of cats) {
+    const items = captures.filter(c => c.category === cat);
+    out += "## " + cat + " (" + items.length + ")\n\n";
+    for (const item of items) {
+      out += "- " + item.subject + (item.description ? ": " + item.description : "") + "\n";
+      if (item.image) { const colors = await sampleColors(item.image); if (colors.length) out += "  Colors sampled: " + colors.join(", ") + "\n"; }
+    }
+    out += "\n";
+  }
+  $("compile-output").value = out;
+};
+$("copy-compile-btn").onclick = async () => { try { await navigator.clipboard.writeText($("compile-output").value); $("copy-compile-btn").textContent = "Copied"; setTimeout(()=>$("copy-compile-btn").textContent="Copy compiled summary", 2000); } catch(e){ $("compile-output").select(); } };
+$("camera-tile").onclick = () => $("file-input").click();
+$("mic-tile").onclick = () => { $("idea-input").focus(); $("dictate-btn").click(); };
+</script>
+</body>
+</html>
