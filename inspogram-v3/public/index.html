@@ -461,9 +461,9 @@ dialog[open]{display:flex;align-items:flex-end;justify-content:center}
 
 <script type="module">
 // ---------- Setup ----------
-// Set to true only after https://getinspogram.web.app/__/auth/handler is an authorized redirect URI in Google Cloud.
-// True before that breaks Google sign-in for everyone.
-const SELF_AUTH = false;
+// Sign-in runs on the app's own address. This needs https://getinspogram.web.app/__/auth/handler
+// to stay an authorized redirect URI in Google Cloud (added 2026-11-10).
+const SELF_AUTH = true;
 const firebaseConfig = {
   apiKey: "AIzaSyAaSTdH5z4Hv7tZXAYWbgR3oB-RfJDc_no",
   // Sign-in runs on the app's own address. Phones block the sign-in handoff when it lives on a different site.

@@ -29,12 +29,8 @@ Fresh rebuild. Replaces v2. Live URL once deployed: https://getinspogram.web.app
 ## Steps
 - [x] Clea: run `firebase login` once in Terminal (opens a browser to sign in to Google).
 - [x] Deploy rules and app: `cd ~/Desktop/clea-vault-main/Projects/ai-experiments/inspogram-v3 && firebase deploy --only firestore:rules,hosting`
-- [ ] Clea: fix phone sign-in, in this order.
-  1. Open https://console.cloud.google.com/apis/credentials?project=inspogram-c738a and click the "Web client (auto created by Google Service)" entry.
-  2. Under "Authorized redirect URIs", add `https://getinspogram.web.app/__/auth/handler` and save.
-  3. Tell Claude "the redirect URI is added". Claude checks it, sets `SELF_AUTH = true` in `public/index.html`, and deploys.
-  4. On your phone, in Safari, sign in with Google at https://getinspogram.web.app.
-  - The fix is in the code but switched off (`SELF_AUTH = false`), because switching it on before step 2 breaks Google sign-in for everyone. Until then, use email sign-in on a phone.
+- [x] Phone sign-in fix: redirect URI added in Google Cloud, fix switched on and deployed (2026-11-10).
+- [ ] Clea: on your phone, in Safari, sign in with Google at https://getinspogram.web.app.
 - [ ] On the live URL: sign in, save a photo, refresh, confirm it is still there.
 
 ## Next builds (proposed 2026-11-10, in order)
@@ -133,3 +129,4 @@ Fresh rebuild. Replaces v2. Live URL once deployed: https://getinspogram.web.app
   - Saves are cached on the device (Firestore local cache). Saving offline says "Saved on this device" and syncs later. Not tested signed in.
   - Correction: the local cache makes the app open fast and work offline, but it does not cut daily reads much. A visit after more than 30 minutes away still re-reads every save.
   - Phone sign-in fix is in the code but off until the redirect URI step is done.
+- 2026-11-10 (Claude Fable 5.2): Clea added the redirect URI. Google now accepts the app's own sign-in address (checked). Set `SELF_AUTH = true` and deployed. Phone sign-in itself not yet tested on a phone.
