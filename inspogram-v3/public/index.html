@@ -378,6 +378,7 @@ dialog[open]{display:flex;align-items:flex-end;justify-content:center}
 <div id="tag-row" class="filter-row"><span class="label">Tags</span><div id="tag-chips" class="chips"></div></div>
 </div>
 <div id="grid" class="grid"></div>
+<div id="grid-more" style="height:1px" aria-hidden="true"></div>
 <div id="canvas-tip" class="canvas-tip hidden"><span id="canvas-tip-text">Drag empty space to select a group.</span><button id="canvas-tip-x" type="button" aria-label="Dismiss tip"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
 <div id="canvas-wrap" class="canvas-wrap hidden"><div id="canvas" class="canvas"></div></div>
 <div class="kbd-hint" aria-hidden="true"><span><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>Shift</kbd> bigger steps</span><span><kbd>+</kbd><kbd>−</kbd> size</span><span><kbd>Enter</kbd> open</span><span><kbd>⌘Z</kbd> undo</span></div>
@@ -433,7 +434,7 @@ dialog[open]{display:flex;align-items:flex-end;justify-content:center}
 <!-- Keyboard shortcuts -->
 <dialog id="keys-dlg"><form class="sheet" method="dialog">
 <div class="sheet-head"><h2>Keyboard shortcuts</h2><button class="x" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-<div class="kbd-list"><kbd>N</kbd><span>New save</span><kbd>/</kbd><span>Search</span><kbd>Esc</kbd><span>Leave select mode</span><kbd>⌘A</kbd><span>Select all, in select mode</span><kbd>⌘Z</kbd><span>Undo a board layout change</span><kbd>←↑↓→</kbd><span>Move a focused card (Shift for bigger steps)</span><kbd>+ −</kbd><span>Resize a focused card</span><kbd>?</kbd><span>This list</span></div>
+<div class="kbd-list"><kbd>N</kbd><span>New save</span><kbd>⌘V</kbd><span>Paste a photo or link to save it</span><kbd>/</kbd><span>Search</span><kbd>Esc</kbd><span>Leave select mode</span><kbd>⌘A</kbd><span>Select all, in select mode</span><kbd>⌘Z</kbd><span>Undo a board layout change</span><kbd>←↑↓→</kbd><span>Move a focused card (Shift for bigger steps)</span><kbd>+ −</kbd><span>Resize a focused card</span><kbd>?</kbd><span>This list</span></div>
 <div class="sheet-foot"><span class="grow"></span><button class="btn-primary" type="button" data-close>Done</button></div>
 </form></dialog>
 
@@ -577,6 +578,13 @@ async function firebaseBackend() {
       return {
         newId: () => F.doc(col("items")).id,
         watch: (name, cb, err) => F.onSnapshot(col(name), s => cb(s.docs.map(d => ({ id: d.id, ...d.data() }))), err),
+        // On a device with nothing saved locally yet, fetch just the newest saves so the first screen shows fast
+        async peek(n) {
+          const cached = await F.getDocsFromCache(F.query(col("items"), F.limit(1))).catch(() => null);
+          if (cached && !cached.empty) return null;
+          const s = await F.getDocs(F.query(col("items"), F.orderBy("createdMs", "desc"), F.limit(n)));
+          return s.docs.map(d => ({ id: d.id, ...d.data() }));
+        },
         async addItem(id, item, image) {
           const b = F.writeBatch(db);
           b.set(ref("items", id), item);
@@ -687,22 +695,30 @@ function onUser(u) {
   $("user-label").textContent = DEMO ? "Demo account" : (u.email || "Account");
   $("demo-note").classList.toggle("hidden", !DEMO);
   data = backend.data(u.uid);
-  unsubs.push(data.watch("items", list => { state.items = list.sort((a, b) => (b.createdMs || 0) - (a.createdMs || 0)); render(); },
+  let gotAll = false;
+  unsubs.push(data.watch("items", list => { gotAll = true; state.items = list.sort((a, b) => (b.createdMs || 0) - (a.createdMs || 0)); render(); },
     e => { $("grid").innerHTML = ""; showEmpty("Could not load your saves", why(e)); }));
+  data.peek?.(60).then(list => { if (list?.length && !gotAll && user === u) { state.items = list; render(); } }).catch(() => {});
   unsubs.push(data.watch("boards", list => { state.boards = list.sort((a, b) => (a.title || "").localeCompare(b.title || "")); capBoards.draw(); detBoards.draw(); render(); },
     e => toast("Could not load boards. " + why(e), true)));
   if (shared.title || shared.text || shared.url || shared.photo) {
-    openCapture(shared);
-    if (shared.photo) caches.open("inspogram-share").then(async c => {
-      const r = await c.match("/shared-photo"); if (!r) return;
+    // Shared from the phone: save right away. Details can be added from the "Saved" message.
+    const pre = { ...shared };
+    if (pre.photo) caches.open("inspogram-share").then(async c => {
+      const r = await c.match("/shared-photo"); if (!r) return quickSave(pre);
       const blob = await r.blob(); await c.delete("/shared-photo");
-      takeFile(new File([blob], "shared", { type: blob.type || "image/jpeg" }));
-    }).catch(() => {});
+      quickSave({ ...pre, file: new File([blob], "shared", { type: blob.type || "image/jpeg" }) });
+    }).catch(() => quickSave(pre));
+    else quickSave(pre);
     shared.title = shared.text = shared.url = ""; shared.photo = false;
     history.replaceState(null, "", location.pathname + (DEMO ? "?demo" : ""));
   }
 }
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+  // The app opens from the copy kept on this device. When a newer version has downloaded, offer it.
+  navigator.serviceWorker.addEventListener("message", e => { if (e.data?.type === "shell-updated") toast("New version ready.", false, { label: "Reload", run: () => location.reload() }); });
+}
 
 // ---------- Rendering ----------
 const boardName = id => state.boards.find(b => b.id === id)?.title || "";
@@ -719,7 +735,7 @@ function showStart() {
   const tip = standalone ? "" : installPrompt ? `<p class="install-tip"><button type="button" class="btn-text" data-start="install">Install Inspogram</button> to save straight from your phone's Share button.</p>`
     : ios ? `<p class="install-tip">On iPhone, tap Share, then Add to Home Screen, to keep Inspogram one tap away.</p>` : "";
   $("grid-empty").innerHTML = `<div class="start"><h2>Start here</h2><ol class="steps">
-<li><span class="n">1</span><div class="grow"><b>Save something</b><span>A photo, link, or note.</span></div><button type="button" class="btn-primary" data-start="save">Save</button></li>
+<li><span class="n">1</span><div class="grow"><b>Save something</b><span>A photo, link, or note. Or paste one anywhere.</span></div><button type="button" class="btn-primary" data-start="save">Save</button></li>
 <li><span class="n">2</span><div class="grow"><b>Group it on a board</b><span>Arrange saves like a moodboard.</span></div><button type="button" class="btn-secondary" data-newboard>New board</button></li>
 <li><span class="n">3</span><div class="grow"><b>Make a brief</b><span>Select saves, copy the brief, paste it into Claude.</span></div></li>
 </ol>${tip}</div>`;
@@ -735,7 +751,7 @@ function itemHTML(it) {
   const img = safeImg(it.thumb);
   const link = safeUrl(it.link);
   let face = "";
-  if (img) face = `<img src="${img}" alt="">`;
+  if (img) face = `<img src="${img}" alt="" decoding="async">`;
   else if (link) face = (safeUrl(it.preview) ? `<img class="prev" src="${esc(safeUrl(it.preview))}" alt="" loading="lazy" referrerpolicy="no-referrer">` : "") + `<div class="face link"><span class="domain">${ARROW}${esc(domainOf(link))}</span>${esc((it.note || it.title || "").slice(0, 140))}</div>`;
   else face = `<div class="face note">${esc((it.note || it.title || "").slice(0, 220))}</div>`;
   const tags = (it.tags || []).slice(0, 3).join(" · ");
@@ -748,6 +764,21 @@ function itemHTML(it) {
 // Columns fill left to right, so newest reads across the top row
 const colsFor = w => w >= 1180 ? 5 : w >= 860 ? 4 : w >= 560 ? 3 : 2;
 let lastCols = 0;
+// The grid draws 60 saves at a time and adds more as you scroll
+const PAGE = 60;
+let shown = PAGE, gridKey = "", gridList = [];
+function showMore() {
+  if ($("grid").classList.contains("hidden") || shown >= gridList.length) return;
+  const colEls = $("grid").querySelectorAll(".col"); if (!colEls.length) return;
+  const html = Array.from(colEls, () => "");
+  gridList.slice(shown, shown + PAGE).forEach((it, j) => html[(shown + j) % colEls.length] += itemHTML(it));
+  html.forEach((h, i) => colEls[i].insertAdjacentHTML("beforeend", h));
+  shown += PAGE;
+  recheckMore();
+}
+const moreIO = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) showMore(); }, { rootMargin: "800px" });
+const recheckMore = () => { moreIO.unobserve($("grid-more")); moreIO.observe($("grid-more")); };
+addEventListener("scroll", () => { if ($("grid-more").getBoundingClientRect().top < innerHeight + 800) showMore(); }, { passive: true });
 
 function render() {
   if (!user) return;
@@ -801,10 +832,14 @@ function render() {
     $("canvas").innerHTML = "";
     const cols = colsFor($("grid").clientWidth || window.innerWidth - 32);
     lastCols = cols;
+    const key = [state.board, state.tag, state.q].join("|");
+    if (key !== gridKey) { gridKey = key; shown = PAGE; }
+    gridList = list;
     const buckets = Array.from({ length: cols }, () => []);
-    list.forEach((it, i) => buckets[i % cols].push(itemHTML(it)));
+    list.slice(0, shown).forEach((it, i) => buckets[i % cols].push(itemHTML(it)));
     $("grid").style.setProperty("--cols", cols);
     $("grid").innerHTML = list.length ? buckets.map(b => `<div class="col">${b.join("")}</div>`).join("") : "";
+    recheckMore();
   }
   if (focusId) document.querySelector(`.item[data-id="${CSS.escape(focusId)}"]`)?.focus({ preventScroll: true });
   $("grid-empty").classList.add("hidden");
@@ -1449,17 +1484,27 @@ document.addEventListener("paste", e => {
   const items = [...(e.clipboardData?.items || [])];
   const imgItem = items.find(i => i.type.startsWith("image/"));
   const inField = e.target.closest && e.target.closest("input,textarea");
+  // With the save sheet open, a paste fills it in. Otherwise a pasted photo or link saves right away.
+  const capOpen = $("capture-dlg").open;
+  if (!capOpen && document.querySelector("dialog[open]")) return;
   if (imgItem) {
     e.preventDefault();
-    if (!$("capture-dlg").open) openCapture();
-    takeFile(imgItem.getAsFile());
+    if (capOpen) takeFile(imgItem.getAsFile()); else quickSave({ file: imgItem.getAsFile() });
     return;
   }
   const text = e.clipboardData?.getData("text") || "";
   if (!inField && safeUrl(text.trim())) {
     e.preventDefault();
-    if (!$("capture-dlg").open) openCapture({ url: text.trim() }); else $("cap-link").value = text.trim();
+    if (capOpen) $("cap-link").value = text.trim(); else quickSave({ url: text.trim() });
   }
+});
+// Photos dropped anywhere on the page save right away too
+const hasFiles = e => [...(e.dataTransfer?.types || [])].includes("Files");
+document.addEventListener("dragover", e => { if (user && hasFiles(e) && !document.querySelector("dialog[open]")) e.preventDefault(); });
+document.addEventListener("drop", e => {
+  if (!user || !hasFiles(e) || document.querySelector("dialog[open]")) return;
+  e.preventDefault();
+  [...e.dataTransfer.files].filter(f => f.type.startsWith("image/")).slice(0, 10).forEach(file => quickSave({ file }));
 });
 $("cap-title").addEventListener("input", () => cap.titleEdited = true);
 const TITLE_API = "https://inspogram-title.title-worker.workers.dev";
@@ -1554,6 +1599,45 @@ $("cap-save").onclick = async () => {
   } catch (e) { $("cap-msg").textContent = "Not saved. " + why(e); $("cap-save").disabled = false; }
 };
 
+// Quick save: no sheet. The save goes in with what we know; "Add details" opens it for a title, tags, and boards.
+async function quickSave(pre) {
+  const link = safeUrl(pre.url) || safeUrl(findUrl(pre.text)) || "";
+  const note = [pre.title, (pre.text || "").replace(link, "")].map(s => (s || "").trim()).filter(Boolean).join("\n");
+  if (!pre.file && !link && !note) return;
+  toast("Saving...");
+  let photo = null;
+  if (pre.file) { try { photo = await processImage(pre.file); } catch (e) { toast(e.message, true); return; } }
+  const id = data.newId();
+  const item = {
+    preview: "", title: (suggestTitle(note, link) || "Untitled").slice(0, 120), note: note.slice(0, 5000), link,
+    tags: state.tag ? [state.tag] : [], boardIds: state.board ? [state.board] : [],
+    thumb: photo?.thumb || "", colors: photo?.colors || [], hasImage: !!photo, createdMs: Date.now()
+  };
+  try {
+    const when = await data.addItem(id, item, photo?.full || "");
+    toast(when === "later" ? "Saved on this device." : "Saved", false, { label: "Add details", run: () => openDetail(id, true) });
+  } catch (e) { toast("Not saved. " + why(e), true); return; }
+  fillLater(id, item);
+}
+// After a quick save, fetch a link's preview picture and page title, or a better title for a long note
+async function fillLater(id, item) {
+  if (!TITLE_API || DEMO) return;
+  const ask = async body => (await fetch(TITLE_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })).json();
+  const untouched = () => state.items.find(x => x.id === id)?.title === item.title;
+  try {
+    const patch = {};
+    if (item.link && !item.hasImage) {
+      const { image, title } = await ask({ url: item.link });
+      if (safeUrl(image)) patch.preview = safeUrl(image);
+      if (title && !item.note && untouched()) patch.title = String(title).slice(0, 120);
+    } else if (item.note.split(/\s+/).length >= 5) {
+      const { title } = await ask({ note: item.note });
+      if (title && untouched()) patch.title = String(title).slice(0, 120);
+    }
+    if (Object.keys(patch).length && state.items.some(x => x.id === id)) await data.update("items", id, patch);
+  } catch {}
+}
+
 // ---------- Detail: view first, edit on request ----------
 let detailId = null;
 const detTags = tagEditor("det-tags", "det-tag-input", "det-suggest");
@@ -1589,12 +1673,12 @@ function fillDetail(it) {
   detTags.set(it.tags); detBoards.set(it.boardIds);
   $("det-msg").textContent = "";
 }
-async function openDetail(id) {
+async function openDetail(id, editing = false) {
   const it = state.items.find(x => x.id === id); if (!it) return;
   detailId = id;
   fillDetail(it); setDetailMode(false);
   $("detail-dlg").showModal();
-  $("det-edit").focus();
+  if (editing) setDetailMode(true); else $("det-edit").focus();
   if (it.hasImage) { const full = safeImg(await data.getImage(id).catch(() => "")); if (full && detailId === id) $("det-img").src = full; }
 }
 $("det-edit").onclick = () => setDetailMode(true);

@@ -30,13 +30,16 @@ Fresh rebuild. Replaces v2. Live URL once deployed: https://getinspogram.web.app
 - [x] Clea: run `firebase login` once in Terminal (opens a browser to sign in to Google).
 - [x] Deploy rules and app: `cd ~/Desktop/clea-vault-main/Projects/ai-experiments/inspogram-v3 && firebase deploy --only firestore:rules,hosting`
 - [x] Phone sign-in fix: redirect URI added in Google Cloud, fix switched on and deployed (2026-11-10).
-- [ ] Clea: on your phone, in Safari, sign in with Google at https://getinspogram.web.app.
-- [ ] On the live URL: sign in, save a photo, refresh, confirm it is still there.
+- [x] Clea: on your phone, in Safari, sign in with Google at https://getinspogram.web.app. (Clea confirmed sign-in works, 2026-11-10.)
+- [ ] Deploy the quick save build. It is on branch `claude/inspogram-quick-save`, not deployed yet: run `firebase deploy --only hosting:main` from that branch's `inspogram-v3` folder.
+- [ ] Live tests, main Google account: save a photo, refresh, confirm it is still there. Paste a screenshot and a link on the page (each should save with no sheet). Second visit opens with Wi-Fi off.
+- [ ] Live tests, throwaway email account: Create account, save one thing, Delete account.
+- [ ] Live test, Android phone signed in: share a photo and a link from another app to Inspogram.
 
 ## Next builds (proposed 2026-11-10, in order)
-- [ ] Quick save: paste or share goes straight in with one tap. Title, tags, and board fill in afterward.
+- [x] Quick save: paste or share goes straight in with one tap. Title, tags, and board fill in afterward.
 - [x] Link saves fetch the page's preview image and title (through the Worker), so links stop being text-only cards.
-- [x] Offline (partly: saves are cached on the device and photo saves queue offline; the app shell is not cached yet): turn on Firestore's local cache and cache the app shell, so it opens instantly and saves without signal.
+- [x] Offline (saves are cached on the device, photo saves queue offline, and the app itself is kept on the device): turn on Firestore's local cache and cache the app shell, so it opens instantly and saves without signal.
 - [ ] Resurface: a "Rediscover" row of older saves, plus "related saves" (shared tags and colors) in the detail view.
 - [ ] Search by color and by type (photo, link, note). The colors are already stored on each save.
 - [x] Keep one small reference image per save (about 800px, under 150 KB) and stop storing the full-size copy. Stays on Firebase's free plan; no Firebase Storage (it needs the paid plan). Clea, 2026-11-10: no paid tools, and Inspogram is not a photo storage tool. The image only needs to be good enough for a brief.
@@ -130,3 +133,11 @@ Fresh rebuild. Replaces v2. Live URL once deployed: https://getinspogram.web.app
   - Correction: the local cache makes the app open fast and work offline, but it does not cut daily reads much. A visit after more than 30 minutes away still re-reads every save.
   - Phone sign-in fix is in the code but off until the redirect URI step is done.
 - 2026-11-10 (Claude Fable 5.2): Clea added the redirect URI. Google now accepts the app's own sign-in address (checked). Set `SELF_AUTH = true` and deployed. Phone sign-in itself not yet tested on a phone.
+- 2026-11-10 (Claude Fable 5.2): Clea confirmed sign-in works with the fix live.
+- 2026-11-10 (Claude Fable 5.2): Quick save, offline app, lighter grid. On branch `claude/inspogram-quick-save`. Not deployed. Tested in demo mode on a local copy only.
+  - Quick save: a pasted photo or link, a photo dropped on the page, or a share from the phone saves right away with no sheet. The "Saved" message has "Add details", which opens the save ready to edit. On a board or tag filter, the save gets that board or tag. The Save button still opens the full sheet, and a paste fills the sheet when it is open.
+  - After a quick save, a link gets its preview picture and page title from the relay. Not tested (demo mode skips the relay).
+  - Offline app: `sw.js` keeps the page, icons, Firebase code, and fonts on the device. The app opens from that copy, downloads the newest one behind it, and shows "New version ready. Reload" when it changed. So a deploy shows up after one Reload, not instantly. Sign-in pages (`/__/`) always go to the network. Tested: opens with the server stopped; the Reload message appears after a change.
+  - Lighter grid: draws 60 saves, adds 60 more as you scroll. Tested with 150 saves. Boards in canvas view still draw every card.
+  - New device: the newest 60 saves load first, then the rest. Not tested (needs a signed-in account with no local copy).
+  - This does not cut daily reads. Every save is still read once per visit after 30 minutes away. Cutting that needs the thumbnails moved out of the save records; not worth it until a library is in the hundreds.
