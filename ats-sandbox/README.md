@@ -10,8 +10,8 @@ Help a customer test an AI review workflow before using it: choose job-relevant 
 
 1. Replace a plausible ATS-experience gate with evidence of workshop ownership and presenter coaching.
 2. Inspect a positive summary that overstates what attendance and ratings establish. Preserve the supported evidence and ask about the unknown.
-3. Coordinate a candidate’s requested live-exercise setup while preserving the same facilitation skills.
-4. Choose a bounded pilot with manual comparison and human approval of contact.
+3. Catch a draft score that marks a candidate down for an agreed exercise setup. Score the skill against the rubric.
+4. Fix a pilot plan that measures only review time. Add measures for missed experience, corrected claims, and useful questions.
 5. Review and copy the actual decisions, authored guidance, follow-up questions, and personal notes.
 
 Navigation stays open. Feedback does not gate progress. Skipped sections remain visibly incomplete; alternative choices are preserved and marked for reconsideration. 

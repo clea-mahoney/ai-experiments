@@ -29,31 +29,31 @@ export const cases = [
     questionForHuman:'How would you check whether customers can configure an interview plan after using your checklist?'
   },
   {
-    id:'access',title:'Keep the skill. Change the way it is demonstrated.',subtitle:'3. Handle an access request',
-    context:'The role includes facilitating live customer workshops. The work sample asks candidates to explain a workflow, respond to questions, and adjust their explanation. Fast speech, camera presence, and visual polish are not criteria. Every candidate is assessed against the same facilitation skills.',
-    draft:'Keep the live exercise, with captions, written questions, and brief thinking time as requested. Confirm the setup with Sam. The recruiter should assess explanation, response to questions, and adaptation against the same rubric.',
-    evidence:[['Sam’s application','Ran monthly customer clinics using live demonstration, chat, and shared notes. The application includes a session outline, but no observation of Sam responding to a participant’s question.'],['Candidate’s message','Could you enable captions, share questions in writing as well as reading them aloud, and allow a short pause before I answer? I can participate in the live exercise with those adjustments.']],
-    question:'What should happen next?',
+    id:'access',title:'Check a score from an adjusted exercise',subtitle:'3. Score an adjusted exercise',
+    context:'Sam asked for captions, questions in writing as well as read aloud, and a short pause before answering. The recruiter agreed and ran the live workshop exercise that way. The AI then drafted a score for each skill in the rubric. Check its score for responding to questions.',
+    draft:'Responding to questions: partially meets. Sam gave accurate answers but needed questions in writing and paused before each one, so it is unclear whether Sam can keep up in a fast-moving live workshop.',
+    evidence:[['Rubric: responding to questions','Answers the question asked, checks that the participant understood, and offers a next step. How quickly someone answers is not scored.'],['Recruiter’s exercise notes','A participant asked how to add a scorecard to one interview stage. Sam paused, gave the exact steps, asked whether that matched the participant’s setup, and offered the checklist. Agreed setup: captions, written questions, short pause.']],
+    question:'What should happen to the AI’s score?',
     options:[
-      {id:'recording',label:'Offer a recording and written Q&A so Sam can demonstrate communication without live time pressure.',feedback:'Sam asked for adjustments to the live exercise. A recording removes the chance to observe Sam responding to a participant in real time. Confirm the requested setup with Sam and arrange the live exercise.'},
-      {id:'confirm',label:'Confirm the requested setup with Sam, arrange the live exercise, and assess the same explanation, response, and adaptation skills.',recommended:true,feedback:'Sam can demonstrate facilitation with the requested setup. Assess the explanation, response to questions, and adaptation. Keep access arrangements with the people coordinating the exercise and out of the AI’s assessment of Sam’s ability.'},
-      {id:'waive',label:'Use Sam’s past clinics as sufficient evidence and skip the work sample to avoid adding burden.',feedback:'The recruiter still needs evidence of how Sam responds and adapts to a participant. Arrange the requested setup so Sam can demonstrate those skills in the live exercise.'}
+      {id:'recording',label:'Keep “partially meets” and add a note that the setup was approved, so the hiring manager reads the score in context.',feedback:'The note explains the setup, but the score still marks Sam down for using it. The rubric scores the answer, not its speed. Score what Sam said and did, and keep the setup out of the assessment.'},
+      {id:'confirm',label:'Rescore against the rubric, remove the comment about the pause and written questions, and keep the setup out of the assessment.',recommended:true,feedback:'The score now reflects what Sam did: answered the exact question, checked understanding, and offered a next step. The agreed setup stays with the people running the exercise, so it cannot lower a skill score.'},
+      {id:'waive',label:'Hold the score and run a second exercise without the setup to see how Sam answers at real workshop pace.',feedback:'Sam would lose the setup the recruiter agreed to, and the retest would measure speed, which the rubric does not score. The notes already show Sam answering, checking understanding, and offering a next step.'}
     ],
-    takeaway:'Confirm access needs with the candidate. Assess the job skill consistently without treating a requested adjustment as evidence of ability or inferring a diagnosis.',
-    questionForHuman:'Can you confirm this setup works for you? We will assess explaining the workflow, responding to questions, and adapting the explanation.'
+    takeaway:'Score the job skill against the rubric, without treating a requested adjustment as evidence of ability or guessing why someone asked for it. Keep access arrangements out of the AI’s assessment.',
+    questionForHuman:'Did the setup work for you, and is there anything you would change for the next interview?'
   },
   {
-    id:'pilot',title:'Decide what the AI may do next',subtitle:'4. Plan a small pilot',
-    context:'Your team wants to spend less time organizing applications and more time talking with candidates. Decide how to test the review workflow with the recruiting team.',
-    draft:'The review plan is ready. Apply it to the whole applicant pool, move profiles with missing evidence out of the review queue, and send follow-up messages automatically.',
-    evidence:[['Pilot priorities','The team wants to know which relevant experience the AI misses, which claims recruiters need to correct, and whether its questions help candidate conversations.'],['Proposed division of work','The AI can prepare source-linked evidence summaries and draft questions. A recruiter verifies the evidence and decides the next conversation. Changes to criteria and overrides should be recorded. Candidate contact requires human review.']],
-    question:'Which next step best tests whether the workflow helps?',
+    id:'pilot',title:'Decide what counts as success',subtitle:'4. Plan a small pilot',
+    context:'Your team wants to spend less time sorting applications and more time talking with candidates. The AI drafted a pilot plan. Check it against what another team learned from a similar pilot.',
+    draft:'Run the AI on the next 40 applications alongside manual review for two weeks. Recruiters approve every follow-up message before it is sent. The pilot succeeds if review time drops below 5 minutes per application.',
+    evidence:[['Team goal','Spend less time sorting applications and more time in useful conversations with candidates.'],['Another team’s pilot','Review time fell from 12 to 4 minutes per application. In a spot check, 3 of 10 summaries left out relevant experience from another industry, and 1 credited a candidate with a result the application did not claim.']],
+    question:'What would you change before the pilot starts?',
     options:[
-      {id:'shadow',label:'Run a small pilot alongside manual review. Verify summaries, inspect missing-evidence cases and overrides, and compare review time and the usefulness of follow-up questions.',recommended:true,feedback:'Compare the AI’s summaries with manual review. Record missed evidence, corrections, useful questions, and time spent. Assign a recruiter to review each summary and message, and use the findings to decide what to change before expanding.'},
-      {id:'volume',label:'Use it across the pool, keep hiring decisions with recruiters, and check how many summaries they review per hour.',feedback:'The team learns how fast recruiters work, but misses whether the AI hides relevant experience or overstates claims. Compare a small batch with manual review and track corrections alongside time spent.'},
-      {id:'approve',label:'Have a manager approve the instructions once, then automate follow-ups for candidates who meet them.',feedback:'Messages go out before recruiters check the candidate evidence or the drafted question. Keep messages as drafts during the pilot so recruiters can correct them before contacting candidates.'}
+      {id:'shadow',label:'Track missed experience, corrected claims, and whether the follow-up questions helped, alongside review time.',recommended:true,feedback:'Now the pilot can show both sides. A fast review that misses relevant experience or repeats an overstated claim counts as a problem, and recruiters can say whether the questions led to better conversations.'},
+      {id:'volume',label:'Lower the target to 3 minutes per application so the pilot shows a clear gain over manual review.',feedback:'A tighter target rewards recruiters for trusting the summaries. The other team got faster while 3 of 10 summaries missed relevant experience. Track missed experience and corrected claims alongside time.'},
+      {id:'approve',label:'Keep the plan, and have a manager spot-check a few summaries if review time looks suspiciously fast.',feedback:'A spot check triggered by speed comes too late and catches too little. The other team found its errors through a planned check. Track missed experience, corrected claims, and useful questions from the start.'}
     ],
-    takeaway:'Pilot source-linked summaries and draft questions alongside manual review. Track useful work and errors as well as time. People decide and approve candidate contact.',
+    takeaway:'Measure what the AI misses and overstates, not only time saved. Compare a small batch with manual review. People decide and approve candidate contact.',
     questionForHuman:'What did the AI miss or overstate, which questions helped the conversation, and where did review time actually change?'
   }
 ];
