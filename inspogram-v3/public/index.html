@@ -734,11 +734,13 @@ function showStart() {
   const ios = /iPhone|iPad|iPod/.test(navigator.userAgent), standalone = matchMedia("(display-mode: standalone)").matches;
   const tip = standalone ? "" : installPrompt ? `<p class="install-tip"><button type="button" class="btn-text" data-start="install">Install Inspogram</button> to save straight from your phone's Share button.</p>`
     : ios ? `<p class="install-tip">On iPhone, tap Share, then Add to Home Screen, to keep Inspogram one tap away.</p>` : "";
+  // The paste shortcut only makes sense with a keyboard
+  const pasteTip = matchMedia("(hover: hover)").matches ? `<p class="install-tip">Shortcut: copy a screenshot or link, then press ${/Mac/.test(navigator.platform) ? "⌘V" : "Ctrl+V"} on this page. It saves right away.</p>` : "";
   $("grid-empty").innerHTML = `<div class="start"><h2>Start here</h2><ol class="steps">
-<li><span class="n">1</span><div class="grow"><b>Save something</b><span>A photo, link, or note. Or paste one anywhere.</span></div><button type="button" class="btn-primary" data-start="save">Save</button></li>
-<li><span class="n">2</span><div class="grow"><b>Group it on a board</b><span>Arrange saves like a moodboard.</span></div><button type="button" class="btn-secondary" data-newboard>New board</button></li>
-<li><span class="n">3</span><div class="grow"><b>Make a brief</b><span>Select saves, copy the brief, paste it into Claude.</span></div></li>
-</ol>${tip}</div>`;
+<li><span class="n">1</span><div class="grow"><b>Save something</b><span>A photo, screenshot, or link.</span></div><button type="button" class="btn-primary" data-start="save">Save</button></li>
+<li><span class="n">2</span><div class="grow"><b>Make a board</b><span>Group saves by project or theme.</span></div><button type="button" class="btn-secondary" data-newboard>New board</button></li>
+<li><span class="n">3</span><div class="grow"><b>Make a brief</b><span>Select saves, copy the brief, paste it into the AI you use.</span></div></li>
+</ol>${pasteTip}${tip}</div>`;
   $("grid-empty").classList.remove("hidden");
 }
 document.addEventListener("click", e => {
@@ -1794,7 +1796,7 @@ $("make-copy").onclick = async () => {
   catch { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); }
   const n = selectedItems().filter(it => it.hasImage).length;
   $("make-copy").textContent = "Copy again";
-  $("make-msg").textContent = n ? `Copied. Paste into Claude, then attach ${n} photo${n === 1 ? "" : "s"}.` : "Copied. Paste into Claude.";
+  $("make-msg").textContent = n ? `Copied. Paste into the AI you use, then attach ${n} photo${n === 1 ? "" : "s"}.` : "Copied. Paste into the AI you use.";
   if (n) { $("make-copy").className = "btn-secondary"; $("make-photos").className = "btn-primary"; $("make-photos").focus(); }
 };
 function resetMakeFoot() {
