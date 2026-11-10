@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "default": "inspogram-c738a"
+  },
+  "targets": {
+    "inspogram-c738a": {
+      "hosting": {
+        "main": [
+          "getinspogram"
+        ],
+        "original": [
+          "inspogram-c738a"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

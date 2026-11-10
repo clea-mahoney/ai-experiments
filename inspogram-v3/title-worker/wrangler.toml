@@ -1,0 +1,13 @@
+name = "inspogram-title"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+
+
+# One counter per visitor, so one person can't use up the free model allowance (12 titles a minute).
+[[durable_objects.bindings]]
+name = "COUNTER"
+class_name = "Counter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Counter"]
