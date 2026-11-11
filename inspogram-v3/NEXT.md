@@ -142,3 +142,4 @@ Fresh rebuild. Replaces v2. Live URL once deployed: https://getinspogram.web.app
   - New device: the newest 60 saves load first, then the rest. Not tested (needs a signed-in account with no local copy).
   - This does not cut daily reads. Every save is still read once per visit after 30 minutes away. Cutting that needs the thumbnails moved out of the save records; not worth it until a library is in the hundreds.
 - 2026-11-10 (Claude Fable 5.2): Start here wording, from Clea's feedback. Not deployed; syntax checked only. Step 1 drops "note". Step 2 is "Make a board: group saves by project or theme". Step 3 and the "Copied" message say "the AI you use", not Claude. The paste shortcut is its own line, shown only on computers.
+- 2026-11-10 (Claude Fable 5.2): Search and link-preview description now says "a brief for the AI you use", not Claude. Not deployed.
