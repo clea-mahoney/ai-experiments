@@ -31,9 +31,9 @@ Fresh rebuild. Replaces v2. Live URL once deployed: https://getinspogram.web.app
 - [x] Deploy rules and app: `cd ~/Desktop/clea-vault-main/Projects/ai-experiments/inspogram-v3 && firebase deploy --only firestore:rules,hosting`
 - [x] Phone sign-in fix: redirect URI added in Google Cloud, fix switched on and deployed (2026-11-10).
 - [x] Clea: on your phone, in Safari, sign in with Google at https://getinspogram.web.app. (Clea confirmed sign-in works, 2026-11-10.)
-- [ ] Deploy the quick save build. It is on branch `claude/inspogram-quick-save`, not deployed yet: run `firebase deploy --only hosting:main` from that branch's `inspogram-v3` folder.
-- [ ] Live tests, main Google account: save a photo, refresh, confirm it is still there. Paste a screenshot and a link on the page (each should save with no sheet). Second visit opens with Wi-Fi off.
-- [ ] Live tests, throwaway email account: Create account, save one thing, Delete account.
+- [x] Deploy the quick save build. It is on branch `claude/inspogram-quick-save`, not deployed yet: run `firebase deploy --only hosting:main` from that branch's `inspogram-v3` folder.
+- [x] Live tests, main Google account: save a photo, refresh, confirm it is still there. Paste a screenshot and a link on the page (each should save with no sheet). Second visit opens with Wi-Fi off.
+- [x] Live tests, throwaway email account: Create account, save one thing, Delete account.
 - [ ] Live test, Android phone signed in: share a photo and a link from another app to Inspogram.
 
 ## Next builds (proposed 2026-11-10, in order)
@@ -143,3 +143,6 @@ Fresh rebuild. Replaces v2. Live URL once deployed: https://getinspogram.web.app
   - This does not cut daily reads. Every save is still read once per visit after 30 minutes away. Cutting that needs the thumbnails moved out of the save records; not worth it until a library is in the hundreds.
 - 2026-11-10 (Claude Fable 5.2): Start here wording, from Clea's feedback. Not deployed; syntax checked only. Step 1 drops "note". Step 2 is "Make a board: group saves by project or theme". Step 3 and the "Copied" message say "the AI you use", not Claude. The paste shortcut is its own line, shown only on computers.
 - 2026-11-10 (Claude Fable 5.2): Search and link-preview description now says "a brief for the AI you use", not Claude. Not deployed.
+- 2026-11-11 (Claude Fable 5.2): Clea deployed and tested live. Passed: Reload message, photo save and refresh, pasted screenshot, pasted link (picture showed up after she saved details), offline open, Delete account. Android share skipped for now.
+  - Open: after going back online, the reload was slow and a pop-up asked her to reconnect with Google. Cause not known.
+  - Fix, not deployed, syntax checked only: the "Install Inspogram to save from your phone's Share button" line no longer shows on computers.

@@ -732,7 +732,8 @@ function filtered() {
 }
 function showStart() {
   const ios = /iPhone|iPad|iPod/.test(navigator.userAgent), standalone = matchMedia("(display-mode: standalone)").matches;
-  const tip = standalone ? "" : installPrompt ? `<p class="install-tip"><button type="button" class="btn-text" data-start="install">Install Inspogram</button> to save straight from your phone's Share button.</p>`
+  // The install tip is about the phone's Share button, so computers don't get it. "Install app" stays in the account menu.
+  const tip = standalone || !/Android|iPhone|iPad|iPod/.test(navigator.userAgent) ? "" : installPrompt ? `<p class="install-tip"><button type="button" class="btn-text" data-start="install">Install Inspogram</button> to save straight from your phone's Share button.</p>`
     : ios ? `<p class="install-tip">On iPhone, tap Share, then Add to Home Screen, to keep Inspogram one tap away.</p>` : "";
   // The paste shortcut only makes sense with a keyboard
   const pasteTip = matchMedia("(hover: hover)").matches ? `<p class="install-tip">Shortcut: copy a screenshot or link, then press ${/Mac/.test(navigator.platform) ? "⌘V" : "Ctrl+V"} on this page. It saves right away.</p>` : "";
