@@ -2,7 +2,7 @@
   "id": "/",
   "name": "Inspogram",
   "short_name": "Inspogram",
-  "description": "Collect what inspires you. Turn it into a brief for Claude.",
+  "description": "Collect what inspires you. Turn it into a brief for the AI you use.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
