@@ -575,6 +575,8 @@ async function firebaseBackend() {
     data(uid) {
       const col = name => F.collection(db, "users", uid, name);
       const ref = (name, id) => F.doc(db, "users", uid, name, id);
+      // Offline, a change is kept on this device and sent later, so don't wait for the server to answer
+      const send = p => { if (navigator.onLine) return p; p.catch(() => {}); return Promise.resolve(); };
       return {
         newId: () => F.doc(col("items")).id,
         watch: (name, cb, err) => F.onSnapshot(col(name), s => cb(s.docs.map(d => ({ id: d.id, ...d.data() }))), err),
@@ -597,20 +599,20 @@ async function firebaseBackend() {
           if (!check.exists()) throw new Error("the save could not be read back");
         },
         async getImage(id) { const s = await F.getDoc(ref("images", id)); return s.exists() ? s.data().data : ""; },
-        update: (name, id, patch) => F.updateDoc(ref(name, id), patch),
-        set: (name, id, data) => F.setDoc(ref(name, id), data),
-        async deleteItem(id) { const b = F.writeBatch(db); b.delete(ref("items", id)); b.delete(ref("images", id)); await b.commit(); },
+        update: (name, id, patch) => send(F.updateDoc(ref(name, id), patch)),
+        set: (name, id, data) => send(F.setDoc(ref(name, id), data)),
+        async deleteItem(id) { const b = F.writeBatch(db); b.delete(ref("items", id)); b.delete(ref("images", id)); await send(b.commit()); },
         async deleteBoard(id, itemsToUpdate) {
           const b = F.writeBatch(db);
           b.delete(ref("boards", id));
           itemsToUpdate.forEach(it => b.update(ref("items", it.id), { boardIds: it.boardIds }));
-          await b.commit();
+          await send(b.commit());
         },
         async restoreBoard(id, board, itemsToUpdate) {
           const b = F.writeBatch(db);
           b.set(ref("boards", id), board);
           itemsToUpdate.forEach(it => b.update(ref("items", it.id), { boardIds: it.boardIds }));
-          await b.commit();
+          await send(b.commit());
         }
       };
     }
@@ -1456,7 +1458,19 @@ function setPhoto(p) {
   $("drop").querySelector("svg").classList.toggle("hidden", !!cap.full);
   $("photo-actions").classList.toggle("hidden", !cap.full);
   $("photo-size").textContent = cap.full ? Math.round(cap.full.length * .75 / 1024) + " KB" : "";
+  showLinkPic();
 }
+// With no photo, the sheet shows the link's preview picture once the relay has found it
+function showLinkPic() {
+  if (cap.full) return;
+  const on = !!cap.preview && safeUrl($("cap-link").value.trim()) === cap.previewFor;
+  const img = $("cap-preview");
+  if (on) { img.referrerPolicy = "no-referrer"; img.src = cap.preview; } else img.removeAttribute("src");
+  img.classList.toggle("hidden", !on);
+  $("drop-text").classList.toggle("hidden", on);
+  $("drop").querySelector("svg").classList.toggle("hidden", on);
+}
+$("cap-preview").addEventListener("error", () => { if (!cap.full) { cap.preview = ""; showLinkPic(); } });
 async function takeFile(file) {
   if (!file || !file.type.startsWith("image/")) return;
   $("cap-msg").textContent = "Preparing photo...";
@@ -1464,7 +1478,7 @@ async function takeFile(file) {
   catch (e) { $("cap-msg").textContent = e.message; }
 }
 function openCapture(pre = {}) {
-  setPhoto(null); cap.titleEdited = false; cap.preview = cap.previewFor = "";
+  cap.titleEdited = false; cap.preview = cap.previewFor = ""; setPhoto(null);
   const link = safeUrl(pre.url) || safeUrl(findUrl(pre.text)) || "";
   const note = [pre.title, (pre.text || "").replace(link, "")].map(s => (s || "").trim()).filter(Boolean).join("\n");
   $("cap-link").value = link; $("cap-note").value = note; $("cap-title").value = suggestTitle(note, link);
@@ -1498,7 +1512,7 @@ document.addEventListener("paste", e => {
   const text = e.clipboardData?.getData("text") || "";
   if (!inField && safeUrl(text.trim())) {
     e.preventDefault();
-    if (capOpen) $("cap-link").value = text.trim(); else quickSave({ url: text.trim() });
+    if (capOpen) { $("cap-link").value = text.trim(); autoTitle(); linkPreview(); } else quickSave({ url: text.trim() });
   }
 });
 // Photos dropped anywhere on the page save right away too
@@ -1516,12 +1530,12 @@ let aiTimer = null, aiAsked = "", aiCtl = null, pvTimer = null;
 async function linkPreview() {
   const link = safeUrl($("cap-link").value.trim());
   if (!TITLE_API || DEMO || !link || link === cap.previewFor) return;
-  cap.previewFor = link; cap.preview = "";
+  cap.previewFor = link; cap.preview = ""; showLinkPic();
   try {
     const r = await fetch(TITLE_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: link }) });
     const { image, title } = await r.json();
     if (safeUrl($("cap-link").value.trim()) !== link) return;
-    cap.preview = safeUrl(image);
+    cap.preview = safeUrl(image); showLinkPic();
     if (title && !cap.titleEdited && !$("cap-note").value.trim()) $("cap-title").value = String(title).slice(0, 120);
   } catch {}
 }
@@ -1542,7 +1556,7 @@ async function aiTitle() {
 }
 $("cap-note").addEventListener("input", autoTitle);
 $("cap-link").addEventListener("input", autoTitle);
-$("cap-link").addEventListener("input", () => { clearTimeout(pvTimer); pvTimer = setTimeout(linkPreview, 700); });
+$("cap-link").addEventListener("input", () => { showLinkPic(); clearTimeout(pvTimer); pvTimer = setTimeout(linkPreview, 700); });
 
 // Dictation
 let rec = null, dictating = false;

@@ -146,3 +146,7 @@ Fresh rebuild. Replaces v2. Live URL once deployed: https://getinspogram.web.app
 - 2026-11-11 (Claude Fable 5.2): Clea deployed and tested live. Passed: Reload message, photo save and refresh, pasted screenshot, pasted link (picture showed up after she saved details), offline open, Delete account. Android share skipped for now.
   - Open: after going back online, the reload was slow and a pop-up asked her to reconnect with Google. Cause not known.
   - Fix, not deployed, syntax checked only: the "Install Inspogram to save from your phone's Share button" line no longer shows on computers.
+- 2026-11-11 (Claude Fable 5.2): Fixes from Clea's second round of live tests. Not deployed.
+  - Link picture: the save sheet now shows a link's preview picture as soon as it is found, instead of only on the card after Save. Pasting a link with the sheet open now fetches it right away. Tested on a local copy against the live relay. Pasting a link on the page (no sheet) already added the picture within about 3 seconds in the same test.
+  - Offline edits: Save, delete, and board changes no longer wait for the server when offline, so the sheet closes and the change syncs later. Not tested (needs a signed-in account offline).
+  - Reconnect pop-up did not come back on a second try. Treated as a one-off.
